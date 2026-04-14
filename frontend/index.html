@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mini Task Management System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel=git"stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <div class="todo-app">
+        <h1>Mini Task Management System</h1>
+
+        <!-- Progress Section -->
+        <div class="stats">
+            <div>
+                <h3>Keep Track of Your Tasks</h3>
+                <div class="progress-bar">
+                    <div id="progress"></div>
+                </div>
+            </div>
+            <div id="numbers">0 / 0</div>
+        </div>
+
+        <!-- Input Section -->
+        <form id="task-form" class="input-area">
+            <input type="text" id="task-input" placeholder="Add a new task..." required>
+            <input type="date" id="due-date">
+            <button type="submit"><i class="fa-solid fa-plus"></i></button>
+        </form>
+
+        <!-- Filter Section -->
+        <div class="filters">
+            <button data-filter="all" class="active">All</button>
+            <button data-filter="completed">Completed</button>
+            <button data-filter="pending">Pending</button>
+        </div>
+
+        <!-- Task List -->
+        <ul id="task-list"></ul>
+
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
