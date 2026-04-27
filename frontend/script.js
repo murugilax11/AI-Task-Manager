@@ -5,14 +5,24 @@ let currentFilter = "all";
 let confettiTriggered = false;
 
 function init() {
-    tasks = loadTasks();
-    renderTasks();
-    document.getElementById("task-form").addEventListener("submit", addTask);
+    loadTasks();
+
+    document.getElementById("task-form")
+        .addEventListener("submit", addTask);
+
     document.querySelectorAll(".filters button")
         .forEach(btn => btn.addEventListener("click", changeFilter));
 }
 
-function addTask(e) {
+// 🔹 LOAD TASKS FROM BACKEND
+async function loadTasks() {
+    const res = await fetch("http://localhost:3000/tasks");
+    tasks = await res.json();
+    renderTasks();
+}
+
+// 🔹 ADD TASK
+async function addTask(e) {
     e.preventDefault();
 
     const text = document.getElementById("task-input").value.trim();
@@ -20,19 +30,19 @@ function addTask(e) {
 
     if (!text) return;
 
-    const task = {
-        id: Date.now(),
-        text,
-        dueDate,
-        completed: false
-    };
+    await fetch("http://localhost:3000/tasks", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ text, dueDate })
+    });
 
-    tasks.push(task);
-    saveTasks();
-    renderTasks();
     e.target.reset();
+    loadTasks();
 }
 
+// 🔹 RENDER TASKS
 function renderTasks() {
     const list = document.getElementById("task-list");
     list.innerHTML = "";
@@ -53,13 +63,17 @@ function renderTasks() {
                 </span>
                 ${task.dueDate ? `<small>Due: ${task.dueDate}</small>` : ""}
             </div>
+
             <div class="task-actions">
-                <input type="checkbox" class="task-checkbox" ${task.completed ? "checked" : ""}
+                <input type="checkbox"
+                    ${task.completed ? "checked" : ""}
                     onchange="toggleTask(${task.id})">
-                   <span class="edit-btn ${task.completed ? 'disabled' : ''}" 
-      onclick="${task.completed ? '' : `editTask(${task.id})`}">
-                        <i class="fa-solid fa-file-pen"></i>
-                    </span>
+
+                <span class="edit-btn ${task.completed ? 'disabled' : ''}"
+                    onclick="${task.completed ? '' : `editTask(${task.id})`}">
+                    <i class="fa-solid fa-file-pen"></i>
+                </span>
+
                 <button onclick="deleteTask(${task.id})">
                     <i class="fa-solid fa-trash"></i>
                 </button>
@@ -72,50 +86,43 @@ function renderTasks() {
     updateProgress();
 }
 
+// 🔹 TOGGLE TASK (FRONTEND ONLY FOR NOW)
 function toggleTask(id) {
     tasks = tasks.map(task =>
         task.id === id ? { ...task, completed: !task.completed } : task
     );
-    saveTasks();
     renderTasks();
 }
 
+// 🔹 DELETE TASK (FRONTEND ONLY FOR NOW)
 function deleteTask(id) {
     tasks = tasks.filter(task => task.id !== id);
-    saveTasks();
     renderTasks();
 }
+
+// 🔹 EDIT TASK
 function editTask(id) {
     const task = tasks.find(t => t.id === id);
     if (!task || task.completed) return;
+
     document.getElementById("task-input").value = task.text;
     document.getElementById("due-date").value = task.dueDate || "";
+
     deleteTask(id);
 }
 
-checkbox.addEventListener('change', () => {
-    const isCompleted = checkbox.checked;
-
-    editBtn.disabled = isCompleted;
-
-    if (isCompleted) {
-        editBtn.setAttribute('aria-disabled', 'true');
-    } else {
-        editBtn.removeAttribute('aria-disabled');
-    }
-
-    updateProgress();
-});
-
+// 🔹 FILTER
 function changeFilter(e) {
     document.querySelectorAll(".filters button")
         .forEach(btn => btn.classList.remove("active"));
+
     e.target.classList.add("active");
 
     currentFilter = e.target.dataset.filter;
     renderTasks();
 }
 
+// 🔹 PROGRESS
 function updateProgress() {
     const total = tasks.length;
     const completed = tasks.filter(t => t.completed).length;
@@ -134,37 +141,14 @@ function updateProgress() {
     }
 }
 
-function saveTasks() {
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-}
-
-function loadTasks() {
-    return JSON.parse(localStorage.getItem("tasks")) || [];
-}
-
-
+// 🔹 CONFETTI
 function triggerConfetti() {
     if (typeof confetti !== "function") return;
 
-    confetti({
-        particleCount: 120,
-        spread: 80,
-        origin: { y: 0.6 }
-    });
+    confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
 
     setTimeout(() => {
-        confetti({
-            particleCount: 60,
-            angle: 60,
-            spread: 55,
-            origin: { x: 0 }
-        });
-
-        confetti({
-            particleCount: 60,
-            angle: 120,
-            spread: 55,
-            origin: { x: 1 }
-        });
+        confetti({ particleCount: 60, angle: 60, spread: 55, origin: { x: 0 } });
+        confetti({ particleCount: 60, angle: 120, spread: 55, origin: { x: 1 } });
     }, 250);
 }
